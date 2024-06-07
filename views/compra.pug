@@ -1,0 +1,150 @@
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    meta(http-equiv="X-UA-Compatible" content="IE=edge")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    link(rel="stylesheet", href="/css/style.css")
+    link(rel="stylesheet", href="/css/style2.css")
+    link(rel="stylesheet", href="https://unpkg.com/boxicons@latest/css/boxicons.min.css")
+    title Carrito de Compra
+  body
+    // LOGO SECTION
+    section.forms-section
+      a(href="/")
+        h1.section-title BOOK
+          a(href="/")
+            samp byte
+
+    // CONTENT WRAPPER
+    .content-wrapper
+      .container
+        .cart
+          .cart-header
+            h1 Carrito
+          .cart-item
+            if carrito.length > 0
+              each librocarrito in carrito
+                .divcontainercompra
+                  .imgcomprafinal
+                    img(src="img_book/" + librocarrito.book_genre + "/" + librocarrito.book_isbn, alt="")
+                  .infocompra
+                    p #{librocarrito.book_name}
+                    span(id="nombreLibro")
+                  .divcantidad
+                    p Cantidad
+                    .divcantidadbox
+                      form(class="divcantidadcontador", id="cantidadselector", method="post", action="/cantidad/" + librocarrito.book_id)
+                        input(type="number", name="cantidad", value=librocarrito.carrito_cantidad, min="1", max=librocarrito.disponibles)
+                        button.btn-update(type="submit") Actualizar
+                    p.disponibles #{librocarrito.disponibles || 0} Disponibles
+                  .eliminarproducto
+                    a(href="/eliminarcarrito/" + librocarrito.book_id, style="color: white; text-decoration: none; cursor: pointer;")
+                      i(class="bx bx-trash bx-tada bx-rotate-90", style="color:#b71021")
+                  .precio
+                    p #{"$" + (librocarrito.book_price * librocarrito.carrito_cantidad).toFixed(2)}
+            else
+              p No hay productos en el carrito.
+
+        // Resumen de compra
+        form(method="post", action="/generarOrden")
+          .summary
+            h2 Resumen de Compra
+            p(id="resumen-producto") Producto: $#{carrito.reduce((acc, libro) => acc + (libro.book_price * libro.carrito_cantidad), 0).toFixed(2)}
+            p(id="resumen-envio") Envío: $79.00
+            p(id="resumen-total") Total: $#{(carrito.reduce((acc, libro) => acc + (libro.book_price * libro.carrito_cantidad), 0) + 79).toFixed(2)}
+            input(type="hidden" name="domicilioId" id="domicilioId" value="")
+            button.btn-continue(type="submit") Continuar compra
+    
+    // Sección de direcciones
+    .contentdireccion
+      if direcciones.length > 0
+        .containerdireccion
+          h2 Direcciones Guardadas
+          each direccion in direcciones
+            .cartdireccion
+              .direccionheader #{direccion.Nombre}
+              p #{direccion.calle} #{direccion.numExterior} #{direccion.numInterior ? direccion.numInterior : ""}
+              p #{direccion.colonia}, #{direccion.Municipio}, #{direccion.ESTADO}
+              p CP: #{direccion.CP}
+              p Teléfono: #{direccion.telefono}
+              p Indicaciones: #{direccion.indicaciones}
+              button(type="button" onclick=`elegirDomicilio(${direccion.id})`) Usar esta dirección
+          button(type="button" onclick="mostrarFormulario()") Agregar nueva dirección
+      else
+        include formulariodireccion.pug
+
+    // Formulario para agregar dirección
+    .contentdireccion(style="display:none")#formulario_direccion
+      .containerdireccion
+        h1.direccionheader Agregar Domicilio
+        form(action="/direccion" method="post")
+          .form-group
+            .row
+              .col-6
+                label(for='nombre') Nombre Y Apellido
+                input(type='text', id='nombre', name='nombre', value='')
+                small Tal Cual Figure En El INE O IFE.
+              .col-6
+                label(for='cp') Código Postal
+                input(type='text', id='codigo-postal', name='cp', value='')
+          .form-group
+            .row
+              .col-4
+                label Estado
+                input(type='text', id='estado', name='estado', value='')
+              .col-4
+                label Municipio/Alcaldía
+                input(type='text', id='municipio', name='municipio', value='')
+              .col-4
+                label Colonia
+                input(type='text', id='colonia', name='colonia', value='')
+          .form-group
+            .row
+              .col-6
+                label Calle
+                input(type='text', name='calle', id='calle')
+              .col-6
+                label Número Exterior
+                input(type='text', name='numero', id='numero')
+                input(type='checkbox', name='sin-numero', id='sin-numero')
+                label(for='sin-numero') Sin Número
+                small.text-danger Completa Este Dato.
+          .form-group
+            .row
+              .col-6
+                label(for='interior') N° Interior/Depto (Opcional)
+                input(type='text', name='interior', id='interior', value='')
+              .col-6
+                label ¿Entre Qué Calles Está? (Opcional)
+                br
+                label Calle 1
+                input(type='text', name='calle1', value='')
+                label Calle 2
+                input(type='text', name='calle2')
+          .form-group
+            .row
+              .col-6
+                label Teléfono De Contacto
+                input(type='text', name='telefono', value='')
+              .col-6
+                label Indicaciónes Adicionales De Esta Dirección
+                textarea(name='indicaciones')
+          button(type='submit') Guardar
+
+    script.
+      function mostrarFormularioDireccion() {
+        document.querySelector('#formulario_direccion').style.display = 'block';
+      }
+
+      function mostrarFormulario() {
+        document.getElementById('formulario_direccion').style.display = 'block';
+      }
+
+      function ocultarFormulario() {
+        document.getElementById('formulario_direccion').style.display = 'none';
+      }
+
+      function elegirDomicilio(id) {
+        document.getElementById('domicilioId').value = id;
+      }
