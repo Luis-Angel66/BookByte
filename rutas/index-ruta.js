@@ -3,6 +3,7 @@ import pool from '../config/database.js';
 import carritoControllers from "../controllers/carritoControllers.js";
 import favoritosControllers from "../controllers/favoritosControllers.js";
 import compraControllers from "../controllers/compraControllers.js";
+import loginControllers from "../controllers/loginControllers.js"
 const router = express.Router();
 
 router.get('/',loginControllers.ensureAuthenticated, carritoControllers.getData, favoritosControllers.getData, (req, res) => {
